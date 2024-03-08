@@ -92,7 +92,9 @@ BannerView().environmentObject(DataModel())
 > @EnvironmentObject 需要当前 View 添加到视图树中才会被系统赋值<br>
 > 同样只有 View 被加入到视图树中, View.onAppear 函数才会被调用<br>
 > 若 View 展示时需要加载网络数据, 更新 dataModel<=> View, 则必须先将 View 添加到视图树
-{: .prompt-info }
+> 
+> 这就意味着: 当子视图使用环境变量的时候, 若未被安装到视图树, 则环境变量因未赋值而 Crash
+{: .prompt-tip }
 
 
 ## @ViewBuilder
