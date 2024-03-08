@@ -12,6 +12,10 @@ layout: post
 > 本文记录了使用 SwiftUI 编程时需要注意的一些细节. 
 > 1. View.onAppear 
 > 2. 使用 GeometryReader 获取基于父视图的布局空间
+> 3. View 协议当作类型使用
+> 4. @StateObject 和 @EnvironmentObject
+> 5. @ViewBuilder
+> 6. View.mask 和 View.overlay
 {: .prompt-info }
 
 ## 前言
@@ -40,6 +44,72 @@ GeometryReader 是一个特殊 View. 它像函数一样以其父视图的布局�
 通常, 我们只直接声明式布局 UI 即可, 比如 ZStack / HStack / VStack 等来布局, SwiftUI 会自动进行布局,并合理利用空间. 但是, SwiftUI 默认是根据子 View 来填充,撑开父容器. 这就有一个问题: 当子视图尺寸明显大于我们指定父视图尺寸的时候, 如果父视图被设置了固定尺寸, 此刻子视图会因为尺寸过大而超出父视图可是范围, 其超出部分并非以左上角原点为锚点对齐,从而造成布局异常.
 
 GeometryReader 就是为了解决这问题, 当父容器固定尺寸, 子视图尺寸过大, 它会读取运行时父容器布局空间, 并以左上角为锚点对齐(真实锚点应该是平台有关, 本文以 iOS 为例.)
+
+## View 协议当作类型使用
+
+View 是个协议, 无法直接当作类型使用, 可以使用 `any View` 代替, 或者返回具体的 View 类型
+
+```swift
+func getView() -> any View {
+   return Text("")
+}
+
+func getView() -> some View {
+   return Text("")
+}
+```
+
+## @StateObject 和 @EnvironmentObject
+
+@StateObject 和 @EnvironmentObject 都是用于数据双向绑定对象的注解, 用于修饰 ObservableObject 的对象
+
+@StateObject 用于声明 View 的成员变量, 需要初始化赋值.
+
+@EnvironmentObject 用于声明环境变量, 通过 View.environmentObject() 赋给视图树 RootView 赋值, 之后整个视图树内的 View 可直接声明使用(由系统统一赋值).
+
+
+```swift
+class DataModel: ObservableObject {
+    @Published var name: String = "点我试试"
+}
+
+struct BannerView: View {
+    // @StateObject var dataModel: DataModel
+    @EnvironmentObject var dataModel: DataModel
+    
+    var body: some View {
+        Text(dataModel.name)
+            .onTapGesture {
+                dataModel.name = "试试就试试"
+            }
+    }
+}
+
+// BannerView(dataModel: DataModel())
+BannerView().environmentObject(DataModel())
+```
+
+> @EnvironmentObject 需要当前 View 添加到视图树中才会被系统赋值<br>
+> 同样只有 View 被加入到视图树中, View.onAppear 函数才会被调用<br>
+> 若 View 展示时需要加载网络数据, 更新 dataModel<=> View, 则必须先将 View 添加到视图树
+{: .prompt-info }
+
+
+## @ViewBuilder
+
+@ViewBuilder 是一个注解, 如下代码会将函数体中所有 View 封装成一个整体 View 返回, 
+如果不用 @ViewBuilder, 则需要显示写明 return 某个具体 View
+
+```swift
+@ViewBuilder
+func getView() -> some View {
+   Text("")
+   Image("")
+}
+```
+
+## View.mask 和 View.overlay
+
 
 
 -----
