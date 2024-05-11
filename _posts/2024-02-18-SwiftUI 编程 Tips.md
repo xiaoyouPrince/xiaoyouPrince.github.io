@@ -15,7 +15,9 @@ layout: post
 > 3. View 协议当作类型使用
 > 4. @StateObject 和 @EnvironmentObject
 > 5. @ViewBuilder
-> 6. View.mask 和 View.overlay
+> 6. View.mask 和 View.background / View.overlay
+> 7. Image 实现 AspectFill 内容填充模式( UIView.contentMode 第二个枚举值)
+> 8. Shape
 {: .prompt-info }
 
 ## 前言
@@ -110,9 +112,37 @@ func getView() -> some View {
 }
 ```
 
-## View.mask 和 View.overlay
+## View.mask 和 View.background / View.overlay
+
+**mask 就是整个图层最终绘制到屏幕上的部分**, 比如一个矩形按钮, 上面有个 ‘➕’ 的 mask, 那么绘制到屏幕上最终视觉效果就是一个 ➕,
+
+**background 就是 View 的背景**, 系统会给 View 分层, 将 backgound 独立一层绘制到 View 底下一层
+
+**overlay 就是 View 上盖一层**, 系统会在 View 上新建一个图层来展示 overlay内容.
 
 
+## Image 实现 AspectFill 的 contentMode
+
+SwiftUI 中 ContentMode 枚举仅有 fill / fit 两个状态, 且 View 关于内容函数 scaledToFill() / scaledToFit() 给人直观感受是只有两种内容模式, 实际上可以通过组合的方式来实现其他mode, 比如 aspectFill.
+
+```swift
+// 实现 aspectFill 实现
+Image(uiImage: UIImage.init(named: "1")!)
+ .resizable()
+ .scaledToFill()
+ .frame(width: UIScreen.main.bounds.width)
+ 
+ // 更直观的查看效果 - 可以用下面代码来看直接效果
+ Ellipse()
+	.fill(Color.purple)
+	.aspectRatio(CGSize(width: 3, height: 4), contentMode: .fit)
+	.frame(width: 200, height: 200)
+	.border(Color(white: 0.75))
+```
+
+## Shape
+
+..
 
 -----
 THE END. 
